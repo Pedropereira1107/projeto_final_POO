@@ -3,3 +3,19 @@ __pycache__/
 .venv/
 venv/
 .env
+
+# Testes
+.pytest_cache/
+
+# Dados gerados (podem ser recriados pelo código)
+data/processed/*
+!data/processed/.gitkeep
+
+# Build da documentação (MkDocs)
+site/
+
+# Streamlit
+.streamlit/secrets.toml
+
+
+

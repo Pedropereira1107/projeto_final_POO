@@ -1,0 +1,16 @@
+# Dados e análise
+pandas>=2.2
+
+# Visualização e dashboard
+plotly>=5.20
+streamlit>=1.35
+
+# Acesso à API (FonteAPI)
+requests>=2.31
+
+# Testes
+pytest>=8.0
+
+# Documentação
+mkdocs>=1.6
+mkdocs-material>=9.5
