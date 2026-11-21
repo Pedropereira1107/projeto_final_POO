@@ -4,7 +4,7 @@ Executar a partir da raiz do projeto:
     streamlit run src/app.py
 
 Este arquivo apenas cria e conecta os objetos (composição); toda a lógica
-fica nas classes dos pacotes ``fontes``, ``tratamento``, ``analise``,
+fica no ``preparar_dados.py`` e nas classes dos pacotes ``fontes``, ``analise``,
 ``visualizacao`` e ``dashboard``.
 """
 

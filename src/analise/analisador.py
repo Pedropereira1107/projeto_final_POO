@@ -1,6 +1,6 @@
 """Análises que respondem às 4 perguntas do projeto (Etapa 4).
 
-A limpeza e a junção ficam no pacote ``tratamento``. Aqui só se analisa
+A limpeza e a junção ficam em ``preparar_dados.py``. Aqui só se analisa
 uma base já pronta (responsabilidade única).
 """
 

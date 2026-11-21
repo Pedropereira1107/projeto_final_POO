@@ -13,6 +13,9 @@ def df_custeio_bruto() -> pd.DataFrame:
         "MesEmissao": ["07", "08"],          # julho -> PRODES 2020; agosto -> PRODES 2021
         "AnoEmissao": ["2020", "2020"],
         "cdPrograma": ["0001", "0001"],
+        "cdSubPrograma": ["0", "0"],
+        "cdFonteRecurso": ["0300", "0300"],
+        "cdModalidade": ["37", "37"],
         "cdProduto": ["1300", "0100"],
         "codCadMu": ["11111", "11111"],
         "Atividade": ["2", "1"],
@@ -31,6 +34,9 @@ def df_invest_bruto() -> pd.DataFrame:
         "MesEmissao": ["01", "01"],
         "AnoEmissao": ["2021", "2021"],
         "cdPrograma": ["0001", "0001"],
+        "cdSubPrograma": ["0002", "0002"],
+        "cdFonteRecurso": ["0300", "0300"],
+        "cdModalidade": ["27", "27"],
         "cdProduto": ["1300", "1300"],
         "cdMunicipio": ["11111", "99999"],   # 99999 não existe no custeio -> descartado
         "Atividade": ["2", "2"],

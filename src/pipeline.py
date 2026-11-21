@@ -1,6 +1,7 @@
-"""Fluxo de preparação dos dados: Fontes -> Tratador -> Integrador -> cache em data/processed.
+"""Fluxo de preparação dos dados: preparar_dados (Tratador + Integrador) -> cache em data/processed.
 
-Substitui o antigo ``preparar_dados.py``. Pode ser executado sozinho:
+O tratamento fica em ``preparar_dados.py`` (classes ``TratadorCredito`` e ``IntegradorMunicipal``).
+Pode ser executado sozinho:
     python src/pipeline.py            (gera/atualiza o cache)
 ou é chamado automaticamente pelo dashboard quando o cache não existe.
 """
@@ -11,11 +12,11 @@ import pandas as pd
 
 import config
 from fontes import FonteAPI, FonteCSV
-from tratamento import IntegradorMunicipal, TratadorCredito
+from preparar_dados import IntegradorMunicipal, TratadorCredito
 
 
 def criar_fontes() -> dict[str, FonteCSV | FonteAPI]:
-    """Instancia todas as fontes do projeto (o resto do código só chama ``obter()``)."""
+    """Instancia as fontes do projeto (usadas na exploração e na correção pelo IPCA)."""
     return {
         "custeio": FonteCSV("SICOR/BCB - custeio", config.DIR_DADOS_BRUTOS,
                             padrao=config.PADRAO_CUSTEIO, dtype=str),
@@ -27,17 +28,31 @@ def criar_fontes() -> dict[str, FonteCSV | FonteAPI]:
     }
 
 
+def deflacionar(credito: pd.DataFrame, ipca: pd.DataFrame,
+                mes_referencia: str = config.IPCA_MES_REFERENCIA) -> pd.DataFrame:
+    """Adiciona a coluna ``valor_real`` (R$ do mês de referência).
+
+    Args:
+        credito: Saída de ``TratadorCredito.processar()`` (precisa de ``ano``, ``mes`` e ``valor``).
+        ipca: Saída da FonteAPI do IPCA (colunas ``data`` "dd/mm/aaaa" e ``valor`` em %).
+        mes_referencia: Mês-base no formato "AAAA-MM".
+    """
+    # TODO: ipca["mes_ref"] = pd.to_datetime(ipca["data"], dayfirst=True).dt.strftime("%Y-%m")
+    # TODO: ipca["indice"] = (1 + ipca["valor"].astype(float) / 100).cumprod()
+    # TODO: fator = indice[mes_referencia] / indice[mês do contrato]
+    # TODO: credito["mes_ref"] = credito["ano"].astype(str) + "-" + credito["mes"].astype(str).str.zfill(2)
+    # TODO: merge pelo mes_ref e credito["valor_real"] = credito["valor"] * fator
+    raise NotImplementedError
+
+
 def gerar_bases() -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Executa o fluxo completo e salva as duas bases leves em data/processed."""
-    fontes = criar_fontes()
+    """Executa o tratamento do preparar_dados e salva as duas bases leves em data/processed."""
+    credito = TratadorCredito(config.DIR_DADOS_BRUTOS).processar()
+    # TODO (correção pelo IPCA):
+    #   credito = deflacionar(credito, criar_fontes()["ipca"].obter())
+    #   credito["valor"] = credito["valor_real"]
 
-    tratador = TratadorCredito(fontes["custeio"].obter(), fontes["investimento"].obter())
-    credito = tratador.processar()
-    # TODO (etapa 3): credito = TratadorCredito.deflacionar(credito, fontes["ipca"].obter())
-    #                 e passar a usar "valor_real" no lugar de "valor" no integrador
-
-    integrador = IntegradorMunicipal(IntegradorMunicipal.ler_municipios_oficiais(),
-                                     fontes["prodes"].obter())
+    integrador = IntegradorMunicipal(config.DIR_DADOS_BRUTOS)
     base = integrador.integrar(credito)
     por_produto = integrador.agregar_por_produto(credito)
 
