@@ -24,6 +24,6 @@ def test_obter_usa_cache():
     ...
 
 
-@pytest.mark.skip(reason="TODO: implementar FonteAPI (usar monkeypatch em requests.get)")
+@pytest.mark.skip(reason="TODO: implementar FonteAPI (usar monkeypatch em requests.get para simular o IPCA)")
 def test_fonte_api_converte_json_em_dataframe(monkeypatch):
     ...

@@ -69,7 +69,7 @@ class TotalCredito(Indicador):
         super().__init__("Crédito rural", "R$", "Valor total de crédito rural contratado.")
 
     def calcular(self, df: pd.DataFrame) -> float:
-        # TODO: df["valor_credito"].sum()
+        # TODO: df["credito_total"].sum()
         raise NotImplementedError
 
 
@@ -91,7 +91,7 @@ class CorrelacaoCreditoDesmatamento(Indicador):
         super().__init__("Correlação crédito × desmatamento", "r")
 
     def calcular(self, df: pd.DataFrame) -> float:
-        # TODO: df["valor_credito"].corr(df["incremento_km2"])
+        # TODO: df["credito_total"].corr(df["incremento_km2"])
         raise NotImplementedError
 
 
@@ -102,5 +102,5 @@ class VariacaoAnualDesmatamento(Indicador):
         super().__init__("Variação anual do desmatamento", "%")
 
     def calcular(self, df: pd.DataFrame) -> float:
-        # TODO: groupby("ano")["incremento_km2"].sum().pct_change().iloc[-1] * 100
+        # TODO: groupby("ano_prodes")["incremento_km2"].sum().pct_change().iloc[-1] * 100
         raise NotImplementedError

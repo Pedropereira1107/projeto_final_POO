@@ -1,6 +1,6 @@
 """Pacote de tratamento, análise e indicadores (Etapa 4)."""
 
-from analise.analisador import AnalisadorDados
+from analise.analisador import AnalisadorCreditoDesmatamento
 from analise.indicadores import (
     CorrelacaoCreditoDesmatamento,
     CreditoPorKm2,
@@ -11,7 +11,7 @@ from analise.indicadores import (
 )
 
 __all__ = [
-    "AnalisadorDados",
+    "AnalisadorCreditoDesmatamento",
     "Indicador",
     "TotalDesmatado",
     "TotalCredito",

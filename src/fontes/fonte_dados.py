@@ -41,7 +41,8 @@ class FonteDados(ABC):
     # ------------------------------------------------------------------ #
     def obter(self) -> pd.DataFrame:
         """Retorna os dados, carregando-os apenas na primeira chamada (cache)."""
-        # TODO: se self._dados for None, chamar self.carregar() e guardar o resultado
+        # TODO: if self._dados is None: self._dados = self.carregar()
+        # TODO: return self._dados
         raise NotImplementedError
 
     @abstractmethod
