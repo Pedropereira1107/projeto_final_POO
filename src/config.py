@@ -1,49 +1,50 @@
-"""Configurações centrais do projeto: caminhos, constantes e parâmetros das fontes.
+"""Configurações do projeto: caminhos dos arquivos e valores fixos.
 
-Centralizar as constantes aqui evita "números mágicos" espalhados pelo código
-e facilita a manutenção (princípio da responsabilidade única).
+Tudo o que é "fixo" fica aqui, num lugar só. Se algo mudar (ex.: o ano final),
+muda-se só este arquivo.
 """
 
-from pathlib import Path
+from pathlib import Path  # Path representa um caminho de pasta/arquivo no computador
 
 # ---------------------------------------------------------------------------
-# Caminhos
+# Pastas
 # ---------------------------------------------------------------------------
-RAIZ_PROJETO = Path(__file__).resolve().parent.parent
-DIR_DADOS_BRUTOS = RAIZ_PROJETO / "data" / "raw"
-DIR_DADOS_PROCESSADOS = RAIZ_PROJETO / "data" / "processed"
-
-# Brutos (nunca são alterados)
-ARQUIVO_PRODES = DIR_DADOS_BRUTOS / "prodes_incremento_municipios_amazonia_legal.csv"
-ARQUIVO_NOMES_PRODES = DIR_DADOS_BRUTOS / "prodes_legal_amazon_nomes_bruto.json"
-PADRAO_CUSTEIO = "mdcr_custeio_*_amazonia_legal.csv"            # 13 arquivos (2013-2025)
-PADRAO_INVESTIMENTO = "mdcr_investimento_*_amazonia_legal.csv"  # 13 arquivos (2013-2025)
-
-# Processados (cache gerado pelo pipeline; podem ser apagados e recriados)
-ARQUIVO_BASE = DIR_DADOS_PROCESSADOS / "base_municipio_ano.csv"
-ARQUIVO_POR_PRODUTO = DIR_DADOS_PROCESSADOS / "credito_municipio_produto.csv"
-ARQUIVO_IPCA = DIR_DADOS_PROCESSADOS / "ipca_mensal.csv"
+RAIZ = Path(__file__).parent.parent             # pasta do projeto (a pasta acima de src/)
+PASTA_BRUTOS = RAIZ / "data" / "raw"            # dados originais (nunca são alterados)
+PASTA_PROCESSADOS = RAIZ / "data" / "processed"  # dados gerados pelo programa
 
 # ---------------------------------------------------------------------------
-# Domínio do problema
+# Nomes dos arquivos
 # ---------------------------------------------------------------------------
-# 2 primeiros dígitos do código IBGE -> sigla da UF (NÃO usar o cdEstado do BCB)
-UF_AMAZONIA_LEGAL = {
+# O * significa "qualquer coisa": pega os 13 arquivos, de 2013 a 2025
+ARQUIVOS_CUSTEIO = "mdcr_custeio_*_amazonia_legal.csv"
+ARQUIVOS_INVESTIMENTO = "mdcr_investimento_*_amazonia_legal.csv"
+ARQUIVO_PRODES = "prodes_incremento_municipios_amazonia_legal.csv"
+ARQUIVO_MUNICIPIOS = PASTA_BRUTOS / "prodes_legal_amazon_nomes_bruto.json"
+
+# Arquivos gerados pelo programa (se forem apagados, ele cria de novo)
+ARQUIVO_BASE = "base_municipio_ano.csv"           # perguntas 1, 3 e 4
+ARQUIVO_PRODUTOS = "credito_municipio_produto.csv"  # pergunta 2
+ARQUIVO_IPCA = PASTA_PROCESSADOS / "ipca_mensal.csv"
+
+# ---------------------------------------------------------------------------
+# Recorte da análise
+# ---------------------------------------------------------------------------
+# Os 2 primeiros dígitos do código IBGE dizem o estado (não usar o cdEstado do BCB)
+UFS = {
     "11": "RO", "12": "AC", "13": "AM", "14": "RR", "15": "PA",
     "16": "AP", "17": "TO", "21": "MA", "51": "MT",
 }
 
-# Anos PRODES com crédito e desmatamento completos.
-# 2013 só tem jan-jul de crédito; 2026 é preliminar no PRODES.
-ANOS_ANALISE = range(2014, 2026)
-
-# Município crítico = top 10% em desmatamento acumulado no período
-PERCENTIL_CRITICO = 0.90
+# Anos PRODES usados: 2013 tem crédito incompleto e 2026 é preliminar
+ANO_INICIAL = 2014
+ANO_FINAL = 2025
 
 # ---------------------------------------------------------------------------
-# IPCA (série SGS 433 do BCB, variação mensal em %)
+# IPCA (inflação mensal em %, série 433 do Banco Central)
 # ---------------------------------------------------------------------------
-IPCA_URL = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados"
-IPCA_PARAMETROS = {"formato": "json", "dataInicial": "01/01/2013", "dataFinal": "31/12/2025"}
-IPCA_MES_REFERENCIA = "2025-12"  # valores em R$ de dez/2025
-TIMEOUT_SEGUNDOS = 60
+# Vai até dez/2025: todos os valores ficam em "reais de dezembro de 2025"
+IPCA_URL = (
+    "https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados"
+    "?formato=json&dataInicial=01/01/2013&dataFinal=31/12/2025"
+)

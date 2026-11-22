@@ -1,50 +1,26 @@
-"""Ponto de entrada do dashboard.
+"""Ponto de entrada: liga todas as peças e abre o dashboard.
 
-Executar a partir da raiz do projeto:
+Executar na raiz do projeto:
     streamlit run src/app.py
-
-Este arquivo apenas cria e conecta os objetos (composição); toda a lógica
-fica no ``preparar_dados.py`` e nas classes dos pacotes ``fontes``, ``analise``,
-``visualizacao`` e ``dashboard``.
 """
-
-from __future__ import annotations
 
 import streamlit as st
 
-from analise import (
-    AnalisadorCreditoDesmatamento,
-    CorrelacaoCreditoDesmatamento,
-    CreditoPorKm2,
-    TotalCredito,
-    TotalDesmatado,
-    VariacaoAnualDesmatamento,
-)
+from analisador import Analisador
 from dashboard import Dashboard
-from pipeline import carregar_bases
-from visualizacao import Visualizador
+from graficos import Visualizador
+from preparar_dados import carregar_bases
+
+st.set_page_config(page_title="Crédito Rural e Desmatamento", layout="wide")  # 1º comando do Streamlit
 
 
-@st.cache_resource  # carrega os CSVs uma vez só, e não a cada clique no dashboard
-def criar_analisador() -> AnalisadorCreditoDesmatamento:
-    base, por_produto = carregar_bases()
-    return AnalisadorCreditoDesmatamento(base, por_produto)
+@st.cache_resource      # guarda o resultado: os dados são lidos 1 vez só, e não a cada clique
+def criar_analisador():
+    base, produtos = carregar_bases()       # lê (ou gera) as tabelas prontas
+    return Analisador(base, produtos)       # cria o objeto que faz as contas
 
 
-def main() -> None:
-    dashboard = Dashboard(
-        analisador=criar_analisador(),
-        visualizador=Visualizador(),
-        indicadores=[
-            TotalDesmatado(),
-            TotalCredito(),
-            CreditoPorKm2(),
-            CorrelacaoCreditoDesmatamento(),
-            VariacaoAnualDesmatamento(),
-        ],
-    )
-    dashboard.renderizar()
-
-
-if __name__ == "__main__":
-    main()
+analisador = criar_analisador()                      # objeto que calcula
+visualizador = Visualizador()                        # objeto que desenha
+dashboard = Dashboard(analisador, visualizador)      # objeto que monta a página, usando os dois acima
+dashboard.mostrar()                                  # desenha a página

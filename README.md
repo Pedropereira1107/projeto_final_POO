@@ -8,22 +8,23 @@ nos estados da Amazônia Legal.
 
 ```
 ├── data/
-│   ├── raw/                 # dados originais (PRODES, cache do SICOR)
-│   └── processed/           # dados tratados gerados pelo código
-├── docs/                    # documentação publicada no GitHub Pages (MkDocs)
+│   ├── raw/                 # dados originais (BCB e PRODES), nunca alterados
+│   └── processed/           # tabelas geradas pelo programa (recriadas se apagadas)
 ├── src/
-│   ├── app.py               # ponto de entrada do dashboard (Streamlit)
-│   ├── exploracao.py        # exploração inicial dos dados (Etapa 2)
-│   ├── config.py            # caminhos e constantes
-│   ├── fontes/              # FonteDados, FonteCSV, FonteAPI
-│   ├── analise/             # AnalisadorDados, Indicador e subclasses
-│   ├── visualizacao/        # Visualizador
-│   └── dashboard/           # Dashboard
+│   ├── config.py            # caminhos e valores fixos
+│   ├── fontes.py            # FonteDados (abstrata), FonteCSV, FonteAPI
+│   ├── preparar_dados.py    # TratadorCredito, IntegradorMunicipal
+│   ├── analisador.py        # Analisador (as 4 perguntas)
+│   ├── graficos.py          # Visualizador
+│   ├── dashboard.py         # Dashboard (Streamlit)
+│   ├── app.py               # ponto de entrada: liga as peças
+│   └── exploracao.py        # raio-x dos dados brutos
 ├── tests/                   # testes automatizados (pytest)
-├── mkdocs.yml
-├── pyproject.toml
 └── requirements.txt
 ```
+
+Caminho dos dados:
+`Fontes -> TratadorCredito -> IntegradorMunicipal -> data/processed -> Analisador -> Dashboard`
 
 ## Como executar
 
@@ -33,10 +34,9 @@ python -m venv .venv
 pip install -r requirements.txt
 
 python src/exploracao.py        # exploração inicial
+python src/preparar_dados.py    # gera data/processed (opcional: o dashboard faz isso sozinho)
 streamlit run src/app.py        # dashboard
 pytest -v                       # testes
-mkdocs serve                    # documentação local
-mkdocs gh-deploy                # publica no gh-pages
 ```
 
 ## Fontes de dados
