@@ -1,10 +1,4 @@
-"""Fluxo de preparação dos dados: preparar_dados (Tratador + Integrador) -> cache em data/processed.
-
-O tratamento fica em ``preparar_dados.py`` (classes ``TratadorCredito`` e ``IntegradorMunicipal``).
-Pode ser executado sozinho:
-    python src/pipeline.py            (gera/atualiza o cache)
-ou é chamado automaticamente pelo dashboard quando o cache não existe.
-"""
+"""Fluxo de preparação dos dados: preparar_dados (Tratador + Integrador) -> cache em data/processed"""
 
 from __future__ import annotations
 
@@ -37,20 +31,31 @@ def deflacionar(credito: pd.DataFrame, ipca: pd.DataFrame,
         ipca: Saída da FonteAPI do IPCA (colunas ``data`` "dd/mm/aaaa" e ``valor`` em %).
         mes_referencia: Mês-base no formato "AAAA-MM".
     """
-    # TODO: ipca["mes_ref"] = pd.to_datetime(ipca["data"], dayfirst=True).dt.strftime("%Y-%m")
-    # TODO: ipca["indice"] = (1 + ipca["valor"].astype(float) / 100).cumprod()
-    # TODO: fator = indice[mes_referencia] / indice[mês do contrato]
-    # TODO: credito["mes_ref"] = credito["ano"].astype(str) + "-" + credito["mes"].astype(str).str.zfill(2)
-    # TODO: merge pelo mes_ref e credito["valor_real"] = credito["valor"] * fator
-    raise NotImplementedError
+    ipca = ipca.copy()
+    ipca["mes_ref"] = pd.to_datetime(ipca["data"], dayfirst=True).dt.strftime("%Y-%m")
+    
+    ipca["indice"] = (1 + ipca["valor"].astype(float) / 100).cumprod()   
+    
+    indice_ref = ipca.loc[ipca["mes_ref"] == mes_referencia, "indice"].iloc[0]
+    
+    ipca["fator"] = indice_ref / ipca["indice"]
+
+    credito = credito.copy()
+    credito["mes_ref"] = credito["ano"].astype(str) + "-" + credito["mes"].astype(str).str.zfill(2)
+    
+    credito = credito.merge(ipca[["mes_ref", "fator"]], on="mes_ref", how="left")
+    
+    credito["valor_real"] = credito["valor"] * credito["fator"]
+    
+    return credito
+    
 
 
 def gerar_bases() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Executa o tratamento do preparar_dados e salva as duas bases leves em data/processed."""
     credito = TratadorCredito(config.DIR_DADOS_BRUTOS).processar()
-    # TODO (correção pelo IPCA):
-    #   credito = deflacionar(credito, criar_fontes()["ipca"].obter())
-    #   credito["valor"] = credito["valor_real"]
+    credito = deflacionar(credito, criar_fontes()["ipca"].obter())
+    credito["valor"] = credito["valor_real"]
 
     integrador = IntegradorMunicipal(config.DIR_DADOS_BRUTOS)
     base = integrador.integrar(credito)

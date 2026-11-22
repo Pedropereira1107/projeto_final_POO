@@ -37,7 +37,7 @@ class FonteDados(ABC):
         """Retorna os dados, carregando-os apenas na primeira chamada (cache)."""
         if self._dados is None:
             self._dados = self.carregar()
-        raise NotImplementedError
+        return self._dados
 
     @abstractmethod
     def carregar(self) -> pd.DataFrame:
