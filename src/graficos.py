@@ -1,6 +1,6 @@
 """Gráficos: a classe que desenha. Ela não faz contas, só recebe tabelas prontas."""
 
-import plotly.express as px     # Plotly Express: cria gráficos interativos com poucas linhas
+import plotly.express as px     
 
 
 class Visualizador:

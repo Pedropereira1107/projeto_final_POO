@@ -23,10 +23,9 @@ class FonteDados(ABC):
 
     @abstractmethod             # obriga toda subclasse a escrever o seu próprio carregar()
     def carregar(self):
-        """Lê os dados da origem. Cada subclasse faz do seu jeito."""
+        pass
 
     def obter(self):
-        """Devolve os dados. Só lê da origem na 1ª vez; depois reaproveita (cache)."""
         if self._dados is None:             # se ainda não leu nada...
             self._dados = self.carregar()   # ...lê agora e guarda
         return self._dados                  # devolve o que está guardado
@@ -36,43 +35,44 @@ class FonteCSV(FonteDados):
     """Lê um ou vários arquivos CSV de uma pasta e junta tudo em uma tabela."""
 
     def __init__(self, nome, pasta, nome_arquivo, tipos=str):
-        super().__init__(nome)              # chama o __init__ da classe mãe (guarda o nome)
-        self.pasta = pasta                  # pasta onde estão os arquivos
-        self.nome_arquivo = nome_arquivo    # nome do arquivo, ou padrão com * (ex.: "mdcr_custeio_*.csv")
-        self.tipos = tipos                  # tipo das colunas; str (texto) preserva zeros à esquerda ("01")
+        super().__init__(nome)         
+        self.pasta = pasta                  
+        self.nome_arquivo = nome_arquivo    
+        self.tipos = tipos                 
 
     def carregar(self):
-        arquivos = sorted(self.pasta.glob(self.nome_arquivo))  # lista os arquivos que batem com o nome, em ordem
-        if len(arquivos) == 0:                                  # se não achou nenhum, avisa com um erro claro
+        arquivos = sorted(self.pasta.glob(self.nome_arquivo))  
+        if len(arquivos) == 0:                                 
             raise FileNotFoundError(f"{self.nome}: nenhum arquivo {self.nome_arquivo} em {self.pasta}")
 
-        tabelas = []                                            # lista vazia para guardar cada tabela lida
-        for arquivo in arquivos:                                # para cada arquivo encontrado...
-            tabelas.append(pd.read_csv(arquivo, dtype=self.tipos))  # ...lê o CSV e coloca na lista
-        return pd.concat(tabelas, ignore_index=True)            # empilha todas as tabelas em uma só
+        tabelas = []                                   
+        
+        for arquivo in arquivos:                               
+            tabelas.append(pd.read_csv(arquivo, dtype=self.tipos))  
+        return pd.concat(tabelas, ignore_index=True)           
 
 
 class FonteAPI(FonteDados):
     """Busca dados de uma API na internet (usada para o IPCA) e guarda uma cópia local."""
 
     def __init__(self, nome, url, arquivo_copia):
-        super().__init__(nome)              # chama o __init__ da classe mãe
-        self.url = url                      # endereço da API
-        self.arquivo_copia = arquivo_copia  # onde salvar a cópia, para não baixar toda vez
+        super().__init__(nome)              
+        self.url = url                      
+        self.arquivo_copia = arquivo_copia  
 
     def carregar(self):
-        if self.arquivo_copia.exists():                 # se já baixou antes...
-            return pd.read_csv(self.arquivo_copia, dtype=str)  # ...lê a cópia local e pronto
+        if self.arquivo_copia.exists():                 
+            return pd.read_csv(self.arquivo_copia, dtype=str)  
 
-        for tentativa in range(3):                      # tenta até 3 vezes (a API do BCB às vezes falha)
+        for tentativa in range(3):                  
             try:
-                resposta = requests.get(self.url, timeout=60)  # faz o pedido à API (espera até 60 s)
-                resposta.raise_for_status()                    # se a API respondeu com erro, vai para o except
-                tabela = pd.DataFrame(resposta.json())         # transforma o JSON recebido em tabela
-                self.arquivo_copia.parent.mkdir(parents=True, exist_ok=True)  # cria a pasta, se não existir
-                tabela.to_csv(self.arquivo_copia, index=False)  # salva a cópia local
-                return tabela                                  # devolve a tabela
-            except requests.RequestException:                  # se deu erro de conexão ou erro da API...
-                time.sleep(5)                                  # ...espera 5 segundos e tenta de novo
+                resposta = requests.get(self.url, timeout=60)  
+                resposta.raise_for_status()                    
+                tabela = pd.DataFrame(resposta.json())         
+                self.arquivo_copia.parent.mkdir(parents=True, exist_ok=True)  
+                tabela.to_csv(self.arquivo_copia, index=False) 
+                return tabela                                  
+            except requests.RequestException:                
+                time.sleep(5)                                  
 
         raise RuntimeError(f"{self.nome}: a API não respondeu depois de 3 tentativas")
