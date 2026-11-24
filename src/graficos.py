@@ -36,7 +36,21 @@ class Visualizador:
 
     def caixa(self, tabela, x, y, titulo):
         """Pergunta 3: boxplot, que mostra a distribuição de valores em cada grupo."""
-        figura = px.box(tabela, x=x, y=y, log_y=True, points="outliers", title=titulo)
+        figura = px.strip(tabela, x=x, y=y, log_y=True, title=titulo)
+        return self.estilo(figura)
+
+    CORES_GRUPO = {"Crítico": "#d62728", "Intermediário": "#ff7f0e", "Baixo": "#2ca02c"}   
+
+    def treemap(self, tabela, titulo):
+ 
+        figura = px.treemap(
+            tabela,
+            path=[px.Constant("Amazônia Legal"), "uf", "municipio"],  
+            values="credito_total",                                    
+            color="grupo",                                             
+            color_discrete_map=self.CORES_GRUPO,                      
+            title=titulo,
+        )
         return self.estilo(figura)
 
     def linhas(self, tabela, y, titulo):

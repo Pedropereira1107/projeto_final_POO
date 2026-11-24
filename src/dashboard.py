@@ -4,7 +4,7 @@ Ela recebe o Analisador (que faz as contas) e o Visualizador (que desenha) pront
 O Dashboard só organiza a tela: filtros, números, abas, gráficos e tabelas.
 """
 
-import streamlit as st      # Streamlit: transforma um script Python em página web
+import streamlit as st      
 
 
 def reais(valor):
@@ -21,8 +21,8 @@ class Dashboard:
     """Monta a página completa do dashboard."""
 
     def __init__(self, analisador, visualizador):
-        self.analisador = analisador        # objeto que faz os cálculos
-        self.visualizador = visualizador    # objeto que desenha os gráficos
+        self.analisador = analisador        
+        self.visualizador = visualizador    
 
     def mostrar(self):
         """Desenha a página inteira, de cima para baixo."""
@@ -30,14 +30,12 @@ class Dashboard:
         st.caption("Fontes: SICOR/BCB (crédito) e PRODES/INPE (desmatamento). "
                    "Valores em reais de dez/2025, corrigidos pelo IPCA.")
 
-        ufs, ano_inicial, ano_final = self.mostrar_filtros()                 # barra lateral
-        tabela = self.analisador.filtrar(ufs, ano_inicial, ano_final)        # aplica os filtros
-
-        if tabela.empty:                                                     # nenhum estado marcado
+        ufs, ano_inicial, ano_final = self.mostrar_filtros()                
+        tabela = self.analisador.filtrar(ufs, ano_inicial, ano_final)        
+        if tabela.empty:                                                  
             st.warning("Escolha pelo menos um estado na barra lateral.")
-            return                                                           # para de desenhar aqui
-
-        self.mostrar_resumo(tabela)                                          # números do topo
+            return                 
+        self.mostrar_resumo(tabela)                                         
 
         abas = st.tabs(["1. Crédito x desmatamento", "2. Produtos", "3. Grupos",
                         "4. Evolução", "Dados"])
@@ -96,12 +94,20 @@ class Dashboard:
 
     def mostrar_pergunta3(self, tabela):
         st.subheader("Municípios críticos x municípios com pouco desmatamento")
-        st.caption("Crítico = 10% que mais desmatam. Baixo = metade que menos desmata.")
+        st.caption("Crítico = 10% que mais desmatam. "
+                   "Intermediário = os que ficam entre a mediana e o percentil 90 (40% dos municípios). "
+                   "Baixo = metade que menos desmata.")
         st.dataframe(self.analisador.pergunta3(tabela), hide_index=True)
         municipios = self.analisador.classificar(tabela)
         grafico = self.visualizador.caixa(municipios, "grupo", "credito_total",
                                           "Distribuição do crédito por grupo")
         st.plotly_chart(grafico)
+
+        st.subheader("Concentração do crédito por município")
+        st.caption("Área = crédito recebido; cor = grupo de desmatamento")
+        st.caption("Critico = Vermelho, Intermediário = Laranja, Baixo = Verde")
+        treemap = self.analisador.treemap_credito(tabela)
+        st.plotly_chart(self.visualizador.treemap(treemap, "Crédito rural por estado e município"))
 
     def mostrar_pergunta4(self, tabela):
         st.subheader("Evolução por estado")

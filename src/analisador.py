@@ -105,6 +105,12 @@ class Analisador:
         })
         return resultado.reset_index()
 
+    def treemap_credito(self, tabela):
+        """P1 e P3: crédito por município, com o grupo de desmatamento de cada um."""
+        municipios = self.classificar(tabela)                        # 1 linha por município, com "grupo"
+        com_credito = municipios["credito_total"] > 0                # True para quem recebeu crédito
+        return municipios[com_credito]                               # remove os municípios com crédito zero
+
     def pergunta4(self, tabela):
         """P4: como crédito e desmatamento evoluíram juntos em cada estado, ano a ano?"""
         colunas = ["credito_total", "incremento_km2"]
